@@ -1,26 +1,48 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import * as fs from 'fs';
 import * as vscode from 'vscode';
+import { Config } from './config';
+import { parseFastfile } from './parser';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-	
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "fastlane-launcher" is now active!');
+export async function activate(context: vscode.ExtensionContext) {
+	let config = new Config();
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('fastlane-launcher.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from fastlane-launcher!');
-	});
+	let fastfilePath = config.fastfilePath;
+	if (fastfilePath.length === 0) {
+		console.log("No Fastfile path defined");
+		let path: string | undefined;
+		while (!path) {
+			path = await vscode.window.showInputBox({
+				title: 'Input the path to Fastfile',
+			});
+			if (path && fs.existsSync(path!) && fs.statSync(path!).isFile()) {
+				config.fastfilePath = path!;
+				fastfilePath = path!;
+			} else {
+				vscode.window.showErrorMessage("The path you've inserted is not valid");
+				path = undefined;
+			}
+		}
+	}
 
-	context.subscriptions.push(disposable);
+	let commands = parseFastfile(fastfilePath);
+
+	/**
+	 * The command that allows the user to pick a lane
+	 */
+	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.showCommands', () => {
+		var quickPick = vscode.window.createQuickPick();
+		quickPick.items = commands;
+		quickPick.show();
+		quickPick.onDidAccept(() => {
+			var items = quickPick.selectedItems;
+			items.forEach((item) => { console.log(`Picked ${item.label}`); });
+			quickPick.dispose();
+		});
+	}));
+
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }

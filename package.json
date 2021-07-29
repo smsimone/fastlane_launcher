@@ -1,5 +1,5 @@
 {
-  "name": "fastlane-launcher",
+	"name": "fastlane-launcher",
 	"displayName": "fastlane-launcher",
 	"description": "",
 	"version": "0.0.1",
@@ -10,16 +10,27 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:fastlane-launcher.helloWorld"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "fastlane-launcher.helloWorld",
-				"title": "Hello World"
+				"command": "fastlane-launcher.showCommands",
+				"title": "Show available lanes"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Fastlane Launcher",
+			"properties": {
+				"fastlane-launcher.fastlaneCommand": {
+					"title": "Fastlane custom command",
+					"description": "The command you want to use to launch fastlane",
+					"default": "fastlane",
+					"type": "string"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
