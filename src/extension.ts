@@ -8,7 +8,22 @@ import { parseFastfile } from './parser';
 export async function activate(context: vscode.ExtensionContext) {
 	let storageManager = new LocalStorageService(context.workspaceState);
 
-	let config = new Config(storageManager);
+	let config: Config = new Config(storageManager);
+
+	vscode.workspace.onDidChangeConfiguration(event => {
+		let affected = event.affectsConfiguration("fastlane-launcher");
+		if (affected) {
+			console.log("Should reload configuration");
+			config = new Config(storageManager);
+		}
+
+		if (!config.fastfilePath) {
+			getFastfilePath(config);
+		} else {
+			populateView(config);
+		}
+	});
+
 
 	if (!config.fastfilePath) {
 		getFastfilePath(config);
@@ -27,7 +42,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		quickPick.show();
 		quickPick.onDidAccept(() => {
 			var items = quickPick.selectedItems;
-			items.forEach((item) => { executeShellCommand(`fastlane ${item.label}`, `Lane: ${item.label}`); });
+			items.forEach((item) => { executeShellCommand(`${config.fastlaneCommand} ${item.label}`, `Lane: ${item.label}`); });
 			quickPick.dispose();
 		});
 	}));
@@ -49,10 +64,13 @@ export function deactivate() { }
 function executeShellCommand(command: string, shellName: string = 'Fastlane launcher') {
 	let terminal = vscode.window.createTerminal({
 		name: shellName,
+		hideFromUser: true,
 	});
+
 	terminal.show();
 	console.log(`Running command ${command}`);
 	terminal.sendText(command);
+
 }
 
 /**
@@ -86,7 +104,7 @@ async function getFastfilePath(config: Config) {
  * @param config 
  */
 function populateView(config: Config) {
-	let provider = new LaneProvider(parseFastfile(config.fastfilePath));
+	let provider = new LaneProvider(parseFastfile(config.fastfilePath), config);
 
 	vscode.window.createTreeView('available_commands', {
 		treeDataProvider: provider

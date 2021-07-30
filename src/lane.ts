@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { Config } from './config';
 
 export class Lane implements vscode.QuickPickItem {
     label: string;
@@ -16,9 +17,11 @@ export class Lane implements vscode.QuickPickItem {
 
 export class LaneProvider implements vscode.TreeDataProvider<Lane>{
     lanes: Lane[];
+    config: Config;
 
-    constructor(lanes: Lane[]) {
+    constructor(lanes: Lane[], config: Config) {
         this.lanes = lanes;
+        this.config = config;
     }
 
 
@@ -31,7 +34,7 @@ export class LaneProvider implements vscode.TreeDataProvider<Lane>{
             command: {
                 title: "Execute",
                 command: "fastlane-launcher.executeShell",
-                arguments: [`fastlane ${element.label}`],
+                arguments: [`${this.config.fastlaneCommand} ${element.label}`],
             }
         };
     }

@@ -1,16 +1,20 @@
-import * as vscode from 'vscode';
-import * as fs from 'fs';
 import { LocalStorageService } from './localStorage';
-import { runInThisContext } from 'vm';
+import * as vscode from 'vscode';
 export class Config {
     private _fastfilePath: string | undefined;
-    private _configFileName: string = 'fastlane_config.json';
+    private _fastlaneCommand: string;
 
     private _storageManager: LocalStorageService;
 
     constructor(storageManager: LocalStorageService) {
         this._storageManager = storageManager;
+        let config = vscode.workspace.getConfiguration('fastlane-launcher');
+        this._fastlaneCommand = config.get<string>('fastlaneCommand')!;
         this._restore();
+    }
+    
+    public get fastlaneCommand(): string {
+        return this._fastlaneCommand;
     }
 
     public get fastfilePath(): string {
