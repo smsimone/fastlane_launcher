@@ -20,7 +20,13 @@ export async function activate(context: vscode.ExtensionContext) {
 		quickPick.show();
 		quickPick.onDidAccept(() => {
 			var items = quickPick.selectedItems;
-			items.forEach((item) => { console.log(`Picked ${item.label}\nDescription: ${item.description}`); });
+			items.forEach((item) => {
+				let terminal = vscode.window.createTerminal({
+					name: 'Fastlane launcher',
+				});
+				terminal.show();
+				terminal.sendText(`fastlane ${item.label}`);
+			});
 			quickPick.dispose();
 		});
 	}));
