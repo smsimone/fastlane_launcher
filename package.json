@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"*"
+		"workspaceContains:**/Fastfile"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -35,6 +35,12 @@
 				}
 			}
 		},
+		"keybindings":[
+			{
+				"command": "fastlane-launcher.showCommands",
+				"key": "shift+alt+l"
+			}
+		],
 		"viewsContainers": {
 			"activitybar": [
 				{

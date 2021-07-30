@@ -6,6 +6,8 @@ import { LocalStorageService } from './localStorage';
 import { parseFastfile } from './parser';
 
 export async function activate(context: vscode.ExtensionContext) {
+	vscode.window.showInformationMessage("Fastlane launcher has been activated");
+
 	let storageManager = new LocalStorageService(context.workspaceState);
 
 	let config: Config = new Config(storageManager);
@@ -24,6 +26,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	/**
+	 * If the saved document is the Fasftile, it will be reloaded
+	 */
+	vscode.workspace.onDidSaveTextDocument(event => { if (event.fileName.includes('Fastfile')) { populateView(config); } });
 
 	if (!config.fastfilePath) {
 		getFastfilePath(config);
@@ -52,25 +58,24 @@ export async function activate(context: vscode.ExtensionContext) {
 	*/
 	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.changeFastfilePath', () => { getFastfilePath(config); }));
 
+	/**
+	 * Executes a custom command passed in @param args in the integrated terminal
+	 */
 	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.executeShell', (args: string) => { executeShellCommand(args, `Lane: ${args.split(" ")[1]}`); }));
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() {
+	vscode.window.showWarningMessage("Fastlane launcher has been deactivated");
+}
 
 /**
  * Creates a shell and executes the selected lane
  */
 function executeShellCommand(command: string, shellName: string = 'Fastlane launcher') {
-	let terminal = vscode.window.createTerminal({
-		name: shellName,
-		hideFromUser: true,
-	});
-
+	let terminal = vscode.window.createTerminal({ name: shellName });
 	terminal.show();
-	console.log(`Running command ${command}`);
 	terminal.sendText(command);
-
 }
 
 /**
