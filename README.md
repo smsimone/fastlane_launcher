@@ -10,7 +10,7 @@ The settings exposed by this extension are:
 
 # Release notes
 
-## #0.0.1
+## 0.0.1
 - Displays all the available lanes on a panel of the activity bar
 - With `shift+alt+l`it will show you all the available lanes from a quick pick dropdown
 - The edits inside Fastfile are reloaded instantly
