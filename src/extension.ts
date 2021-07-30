@@ -24,13 +24,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		quickPick.show();
 		quickPick.onDidAccept(() => {
 			var items = quickPick.selectedItems;
-			items.forEach((item) => {
-				let terminal = vscode.window.createTerminal({
-					name: 'Fastlane launcher',
-				});
-				terminal.show();
-				terminal.sendText(`fastlane ${item.label}`);
-			});
+			items.forEach((item) => { executeShellCommand(`fastlane ${item.label}`, `Lane: ${item.label}`); });
 			quickPick.dispose();
 		});
 	}));
@@ -41,10 +35,26 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.changeFastfilePath', () => {
 		getFastfilePath(config);
 	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.executeShell', (args: string) => {
+		executeShellCommand(args, `Lane: ${args.split(" ")[1]}`);
+	}));
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() { }
+
+/**
+ * Creates a shell and executes the selected lane
+ */
+function executeShellCommand(command: string, shellName: string = 'Fastlane launcher') {
+	let terminal = vscode.window.createTerminal({
+		name: shellName,
+	});
+	terminal.show();
+	console.log(`Running command ${command}`);
+	terminal.sendText(command);
+}
 
 /**
  * Sets the `config.fastFilePath` to a new value

@@ -24,7 +24,16 @@ export class LaneProvider implements vscode.TreeDataProvider<Lane>{
 
     onDidChangeTreeData?: vscode.Event<void | Lane | null | undefined> | undefined;
     getTreeItem(element: Lane): vscode.TreeItem | Thenable<vscode.TreeItem> {
-        return element;
+        return {
+            id: element.label,
+            label: element.label,
+            description: element.description,
+            command: {
+                title: "Execute",
+                command: "fastlane-launcher.executeShell",
+                arguments: [`fastlane ${element.label}`],
+            }
+        };
     }
 
     getChildren(element?: Lane): vscode.ProviderResult<Lane[]> {
