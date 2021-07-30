@@ -1,7 +1,11 @@
 {
 	"name": "fastlane-launcher",
-	"displayName": "fastlane-launcher",
-	"description": "",
+	"displayName": "Fastlane launcher",
+	"description": "This is a simple extension for VsCode that parses and displays all the available lanes present in your Fastfile.",
+	"publisher": "smsimone",
+	"repository": {
+		"url": "https://github.com/smsimone/fastlane_launcher"
+	},
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.58.0"
@@ -35,7 +39,7 @@
 				}
 			}
 		},
-		"keybindings":[
+		"keybindings": [
 			{
 				"command": "fastlane-launcher.showCommands",
 				"key": "shift+alt+l"
