@@ -5,14 +5,17 @@ import { LaneProvider } from './lane';
 import { LocalStorageService } from './localStorage';
 import { parseFastfile } from './parser';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
 	let storageManager = new LocalStorageService(context.workspaceState);
 
 	let config = new Config(storageManager);
 
-	getFastfilePath(config);
+	if (!config.fastfilePath) {
+		getFastfilePath(config);
+	} else {
+		populateView(config);
+	}
+
 
 	/**
 	 * The command that allows the user to pick a lane
@@ -32,13 +35,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	/**
 	* Allows the use to change fastfile's path 
 	*/
-	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.changeFastfilePath', () => {
-		getFastfilePath(config);
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.changeFastfilePath', () => { getFastfilePath(config); }));
 
-	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.executeShell', (args: string) => {
-		executeShellCommand(args, `Lane: ${args.split(" ")[1]}`);
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.executeShell', (args: string) => { executeShellCommand(args, `Lane: ${args.split(" ")[1]}`); }));
 }
 
 // this method is called when your extension is deactivated
@@ -61,12 +60,8 @@ function executeShellCommand(command: string, shellName: string = 'Fastlane laun
  * @param config 
  */
 async function getFastfilePath(config: Config) {
-	let fastfilePath = config.fastfilePath;
 
-	if (fastfilePath) {
-		populateView(config);
-		return;
-	}
+	let fastfilePath: string = '';
 
 	let path: string | undefined;
 	while (!path) {
@@ -82,6 +77,7 @@ async function getFastfilePath(config: Config) {
 		}
 	}
 	config.fastfilePath = fastfilePath;
+
 	populateView(config);
 }
 
