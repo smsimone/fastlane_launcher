@@ -8,41 +8,53 @@ import { parseFastfile } from './parser';
 export async function activate(context: vscode.ExtensionContext) {
 	let config = new Config();
 
-	let fastfilePath = config.fastfilePath;
-	if (fastfilePath.length === 0) {
-		console.log("No Fastfile path defined");
-		let path: string | undefined;
-		while (!path) {
-			path = await vscode.window.showInputBox({
-				title: 'Input the path to Fastfile',
-			});
-			if (path && fs.existsSync(path!) && fs.statSync(path!).isFile()) {
-				config.fastfilePath = path!;
-				fastfilePath = path!;
-			} else {
-				vscode.window.showErrorMessage("The path you've inserted is not valid");
-				path = undefined;
-			}
-		}
-	}
-
-	let commands = parseFastfile(fastfilePath);
+	getFastfilePath(config);
 
 	/**
 	 * The command that allows the user to pick a lane
 	 */
 	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.showCommands', () => {
+		let commands = parseFastfile(config.fastfilePath);
 		var quickPick = vscode.window.createQuickPick();
 		quickPick.items = commands;
 		quickPick.show();
 		quickPick.onDidAccept(() => {
 			var items = quickPick.selectedItems;
-			items.forEach((item) => { console.log(`Picked ${item.label}`); });
+			items.forEach((item) => { console.log(`Picked ${item.label}\nDescription: ${item.description}`); });
 			quickPick.dispose();
 		});
 	}));
 
+	/**
+	* Allows the use to change fastfile's path 
+	*/
+	context.subscriptions.push(vscode.commands.registerCommand('fastlane-launcher.changeFastfilePath', () => {
+		getFastfilePath(config);
+	}));
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() { }
+
+/**
+ * Sets the `config.fastFilePath` to a new value
+ * @param config 
+ */
+async function getFastfilePath(config: Config) {
+	let fastfilePath = config.fastfilePath;
+
+	let path: string | undefined;
+	while (!path) {
+		path = await vscode.window.showInputBox({
+			title: 'Input the path to Fastfile',
+		});
+		if (path && fs.existsSync(path!) && fs.statSync(path!).isFile()) {
+			config.fastfilePath = path!;
+			fastfilePath = path!;
+		} else {
+			vscode.window.showErrorMessage("The path you've inserted is not valid");
+			path = undefined;
+		}
+	}
+	config.fastfilePath = fastfilePath;
+}

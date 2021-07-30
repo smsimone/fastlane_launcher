@@ -18,6 +18,10 @@
 			{
 				"command": "fastlane-launcher.showCommands",
 				"title": "Show available lanes"
+			},
+			{
+				"command": "fastlane-launcher.changeFastfilePath",
+				"title": "Change fastfile path"
 			}
 		],
 		"configuration": {
