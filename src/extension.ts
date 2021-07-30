@@ -2,12 +2,15 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { Config } from './config';
 import { LaneProvider } from './lane';
+import { LocalStorageService } from './localStorage';
 import { parseFastfile } from './parser';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
-	let config = new Config();
+	let storageManager = new LocalStorageService(context.workspaceState);
+
+	let config = new Config(storageManager);
 
 	getFastfilePath(config);
 
@@ -49,6 +52,11 @@ export function deactivate() { }
  */
 async function getFastfilePath(config: Config) {
 	let fastfilePath = config.fastfilePath;
+
+	if (fastfilePath) {
+		populateView(config);
+		return;
+	}
 
 	let path: string | undefined;
 	while (!path) {
