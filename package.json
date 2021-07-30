@@ -34,6 +34,23 @@
 					"type": "string"
 				}
 			}
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "fastlane_launcher",
+					"title": "Fastlane Launcher",
+					"icon": "resources/fastlane.svg"
+				}
+			]
+		},
+		"views": {
+			"fastlane_launcher": [
+				{
+					"id": "available_commands",
+					"name": "Available commands"
+				}
+			]
 		}
 	},
 	"scripts": {

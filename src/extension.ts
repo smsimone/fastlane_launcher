@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { Config } from './config';
+import { LaneProvider } from './lane';
 import { parseFastfile } from './parser';
 
 // this method is called when your extension is activated
@@ -63,4 +64,18 @@ async function getFastfilePath(config: Config) {
 		}
 	}
 	config.fastfilePath = fastfilePath;
+	populateView(config);
+}
+
+/**
+ * Populates the activity bar view with available lanes
+ * @param config 
+ */
+function populateView(config: Config) {
+	let provider = new LaneProvider(parseFastfile(config.fastfilePath));
+
+	vscode.window.createTreeView('available_commands', {
+		treeDataProvider: provider
+	});
+
 }
