@@ -6,7 +6,7 @@
 	"repository": {
 		"url": "https://github.com/smsimone/fastlane_launcher"
 	},
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"engines": {
 		"vscode": "^1.58.0"
 	},
@@ -30,6 +30,7 @@
 		],
 		"configuration": {
 			"title": "Fastlane Launcher",
+			"icon": "resources/fastlane.png",
 			"properties": {
 				"fastlane-launcher.fastlaneCommand": {
 					"title": "Fastlane custom command",

@@ -10,10 +10,13 @@ The settings exposed by this extension are:
 
 # Release notes
 
+# 0.0.3
+- Changed `tag :` to `#TAG` to group different lanes
+- Fixed the `onClick` listener on tag entry
 # 0.0.2
 - Now private lanes will be ignored
 - Added the possibility to handle a `tag :` descriptor to group lanes
-# '0.0.1'
+# 0.0.1
 - Displays all the available lanes on a panel of the activity bar
 - With `shift+alt+l`it will show you all the available lanes from a quick pick dropdown
 - The edits inside Fastfile are reloaded instantly

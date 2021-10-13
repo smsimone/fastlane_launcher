@@ -4,7 +4,7 @@ import { Lane } from './lane';
 const _laneStarting = "lane :";
 const _privateLaneStarting = 'private_lane :';
 const _descriptionStarting = "desc :";
-const _laneTag = 'tag :';
+const _laneTag = '#TAG ';
 
 /**
  * Parses the Fastfile to search the available lanes

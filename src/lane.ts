@@ -46,7 +46,7 @@ export class LaneGroupProvider implements vscode.TreeDataProvider<TreeItem>{
             } else {
                 description = g.tag;
             }
-            this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.label, l.description))));
+            this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.label, l.description, undefined, `${this.config.fastlaneCommand} ${l.label}`))));
         });
 
         console.log(`Got ${this.data.length} groups`);
@@ -108,7 +108,7 @@ export class LaneProvider implements vscode.TreeDataProvider<Lane>{
 class TreeItem extends vscode.TreeItem {
     children: TreeItem[] | undefined;
 
-    constructor(label: string, description?: string | undefined, children?: TreeItem[]) {
+    constructor(label: string, description?: string | undefined, children?: TreeItem[], command?: string) {
         super(
             label,
             children === undefined ? vscode.TreeItemCollapsibleState.None :
@@ -116,5 +116,12 @@ class TreeItem extends vscode.TreeItem {
         );
         this.children = children;
         this.description = description;
+        if (command !== undefined) {
+            this.command = {
+                title: "Execute",
+                command: "fastlane-launcher.executeShell",
+                arguments: [command],
+            };
+        }
     }
 }
