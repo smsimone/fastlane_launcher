@@ -7,10 +7,12 @@ export class Lane implements vscode.QuickPickItem {
     detail?: string | undefined;
     picked?: boolean | undefined;
     alwaysShow?: boolean | undefined;
+    tag?: string | undefined;
 
-    constructor(label: string, description?: string) {
+    constructor(label: string, description?: string, tag?: string) {
         this.label = label;
         this.description = description;
+        this.tag = tag;
     }
 }
 

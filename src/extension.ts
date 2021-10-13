@@ -4,6 +4,7 @@ import { Config } from './config';
 import { LaneProvider } from './lane';
 import { LocalStorageService } from './localStorage';
 import { parseFastfile } from './parser';
+import { StringQuickPick } from './stringQuickPick';
 
 export async function activate(context: vscode.ExtensionContext) {
 	vscode.window.showInformationMessage("Fastlane launcher has been activated");
@@ -87,16 +88,37 @@ async function getFastfilePath(config: Config) {
 	let fastfilePath: string = '';
 
 	let path: string | undefined;
-	while (!path) {
-		path = await vscode.window.showInputBox({
-			title: 'Input the path to Fastfile',
+	const uris = await vscode.workspace.findFiles('Fastfile');
+
+	if (uris.length > 1) {
+		var quickPick = vscode.window.createQuickPick();
+		quickPick.items = uris.map((uri) => new StringQuickPick(uri.toString()));
+		quickPick.show();
+		quickPick.canSelectMany = false;
+		quickPick.onDidAccept(() => {
+			var items = quickPick.selectedItems;
+			config.fastfilePath = items[0].label;
+			quickPick.dispose();
 		});
-		if (path && fs.existsSync(path!) && fs.statSync(path!).isFile()) {
-			config.fastfilePath = path!;
-			fastfilePath = path!;
-		} else {
-			vscode.window.showErrorMessage("The path you've inserted is not valid");
-			path = undefined;
+		return;
+	}
+
+
+	if (uris.length === 1) {
+		path = uris[0].toString();
+		console.log(`Found fastfile at ${path}`);
+	} else {
+		while (!path) {
+			path = await vscode.window.showInputBox({
+				title: 'Input the path to Fastfile',
+			});
+			if (path && fs.existsSync(path!) && fs.statSync(path!).isFile()) {
+				config.fastfilePath = path!;
+				fastfilePath = path!;
+			} else {
+				vscode.window.showErrorMessage("The path you've inserted is not valid");
+				path = undefined;
+			}
 		}
 	}
 	config.fastfilePath = fastfilePath;

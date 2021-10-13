@@ -36,7 +36,7 @@ export class Config {
      * Recovers the old value from cache
      */
     _restore() {
-        this._fastfilePath = this._storageManager.getValue<string | undefined>("fastfilePath");
+        //this._fastfilePath = this._storageManager.getValue<string | undefined>("fastfilePath");
         console.log(`restored fastfilepath: ${this._fastfilePath}`);
     }
 }
