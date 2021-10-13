@@ -20,13 +20,14 @@ export function parseFastfile(fastfilePath: string): Lane[] {
     content.split("\n").forEach((line) => {
         if (line.includes(_laneStarting) && !line.includes(_privateLaneStarting)) {
             var name = line.split(" ")[1].replace(":", "");
-            commands.push(new Lane(name, lastDesc));
+            commands.push(new Lane(name, lastDesc, lastTag));
             lastDesc = "";
+            lastTag = "";
         } else if (line.includes(_descriptionStarting)) {
             var description = line.replace(_descriptionStarting, "").replace("\"", "").replace("\"", "");
             lastDesc += ` ${description}`;
         } else if (line.includes(_laneTag)) {
-            lastTag = line.split(" ")[1].replace(":", "");
+            lastTag = line.replace(_laneTag, "").replace("\"", "").replace("\"", "");
         }
     });
 

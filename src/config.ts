@@ -12,7 +12,7 @@ export class Config {
         this._fastlaneCommand = config.get<string>('fastlaneCommand')!;
         this._restore();
     }
-    
+
     public get fastlaneCommand(): string {
         return this._fastlaneCommand;
     }
@@ -25,6 +25,7 @@ export class Config {
         this._fastfilePath = value;
         this._saveCache();
     }
+    
     /**
      * Saves the value inserted
      */

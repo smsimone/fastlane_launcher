@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { Config } from './config';
-import { LaneProvider } from './lane';
+import { LaneGroupProvider, LaneProvider } from './lane';
 import { LocalStorageService } from './localStorage';
 import { parseFastfile } from './parser';
 import { StringQuickPick } from './stringQuickPick';
@@ -12,6 +12,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	let storageManager = new LocalStorageService(context.workspaceState);
 
 	let config: Config = new Config(storageManager);
+
+
 
 	vscode.workspace.onDidChangeConfiguration(event => {
 		let affected = event.affectsConfiguration("fastlane-launcher");
@@ -92,12 +94,13 @@ async function getFastfilePath(config: Config) {
 
 	if (uris.length > 1) {
 		var quickPick = vscode.window.createQuickPick();
-		quickPick.items = uris.map((uri) => new StringQuickPick(uri.toString()));
+		quickPick.items = uris.map((uri) => new StringQuickPick(uri.path));
 		quickPick.show();
 		quickPick.canSelectMany = false;
 		quickPick.onDidAccept(() => {
 			var items = quickPick.selectedItems;
 			config.fastfilePath = items[0].label;
+			populateView(config);
 			quickPick.dispose();
 		});
 		return;
@@ -105,7 +108,7 @@ async function getFastfilePath(config: Config) {
 
 
 	if (uris.length === 1) {
-		path = uris[0].toString();
+		fastfilePath = uris[0].path;
 		console.log(`Found fastfile at ${path}`);
 	} else {
 		while (!path) {
@@ -121,6 +124,7 @@ async function getFastfilePath(config: Config) {
 			}
 		}
 	}
+
 	config.fastfilePath = fastfilePath;
 
 	populateView(config);
@@ -131,10 +135,15 @@ async function getFastfilePath(config: Config) {
  * @param config 
  */
 function populateView(config: Config) {
-	let provider = new LaneProvider(parseFastfile(config.fastfilePath), config);
+	try {
+		const lanes = parseFastfile(config.fastfilePath);
+		let provider = new LaneGroupProvider(lanes, config);
 
-	vscode.window.createTreeView('available_commands', {
-		treeDataProvider: provider
-	});
-
+		vscode.window.createTreeView('available_commands', {
+			treeDataProvider: provider
+		});
+	} catch (e) {
+		console.error(`Got error while creating tree view: ${e}`);
+		vscode.window.showErrorMessage("Got error while parsing Fastfile");
+	}
 }
