@@ -90,15 +90,18 @@ async function getFastfilePath(config: Config) {
 	let fastfilePath: string = '';
 
 	let path: string | undefined;
-	const uris = await vscode.workspace.findFiles('Fastfile');
+
+	const uris = await vscode.workspace.findFiles('**/Fastfile', null);
+
+	console.log(`[FASTLANE-LAUNCHER] Found uris: ${uris}`);
 
 	if (uris.length > 1) {
-		var quickPick = vscode.window.createQuickPick();
+		const quickPick = vscode.window.createQuickPick();
 		quickPick.items = uris.map((uri) => new StringQuickPick(uri.path));
 		quickPick.show();
 		quickPick.canSelectMany = false;
 		quickPick.onDidAccept(() => {
-			var items = quickPick.selectedItems;
+			const items = quickPick.selectedItems;
 			config.fastfilePath = items[0].label;
 			populateView(config);
 			quickPick.dispose();
@@ -111,6 +114,7 @@ async function getFastfilePath(config: Config) {
 		fastfilePath = uris[0].path;
 		console.log(`Found fastfile at ${path}`);
 	} else {
+		console.log('[FASTLANE-LAUNCHER] Requesting the path to the user');
 		while (!path) {
 			path = await vscode.window.showInputBox({
 				title: 'Input the path to Fastfile',

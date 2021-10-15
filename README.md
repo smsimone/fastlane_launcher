@@ -10,6 +10,8 @@ The settings exposed by this extension are:
 
 # Release notes
 
+# 0.0.4
+- Fixed automatic `Fastfile` finding
 # 0.0.3
 - Changed `tag :` to `#TAG` to group different lanes
 - Fixed the `onClick` listener on tag entry
