@@ -10,11 +10,13 @@ export class Lane implements vscode.QuickPickItem {
     picked?: boolean | undefined;
     alwaysShow?: boolean | undefined;
     tag?: string | undefined;
+    privateLane: boolean;
 
-    constructor(label: string, description?: string, tag?: string) {
+    constructor(label: string, privateLane: boolean, description?: string, tag?: string) {
         this.label = label;
         this.description = description;
         this.tag = tag;
+        this.privateLane = privateLane;
     }
 }
 
@@ -27,16 +29,30 @@ export class LaneGroupProvider implements vscode.TreeDataProvider<TreeItem>{
     data: TreeItem[] = [];
 
     constructor(lanes: Lane[], config: Config) {
-        this.lanes = lanes;
         this.config = config;
+
+        this.lanes = lanes.filter((lane) => {
+            if (config.showPrivateLanes) { return true; }
+            else { return !lane.privateLane; }
+        });
+
         this.lanes.forEach((lane) => {
-            const tag = lane.tag;
-            let group: Group | undefined = this.groups.find((group) => group.tag === tag);
-            if (group === undefined) {
-                group = new Group(tag);
-                this.groups.push(group);
+            if (lane.privateLane) {
+                let group: Group | undefined = this.groups.find((group) => group.tag === config.privateLaneGroupName);
+                if (group === undefined) {
+                    group = new Group(config.privateLaneGroupName);
+                    this.groups.push(group);
+                }
+                group.addLane(lane);
+            } else {
+                const tag = lane.tag;
+                let group: Group | undefined = this.groups.find((group) => group.tag === tag);
+                if (group === undefined) {
+                    group = new Group(tag);
+                    this.groups.push(group);
+                }
+                group.addLane(lane);
             }
-            group.addLane(lane);
         });
 
         this.groups.forEach((g) => {
@@ -48,8 +64,6 @@ export class LaneGroupProvider implements vscode.TreeDataProvider<TreeItem>{
             }
             this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.label, l.description, undefined, `${this.config.fastlaneCommand} ${l.label}`))));
         });
-
-        console.log(`Got ${this.data.length} groups`);
     }
 
     onDidChangeTreeData?: vscode.Event<void | TreeItem | null | undefined> | undefined;
@@ -94,7 +108,8 @@ export class LaneProvider implements vscode.TreeDataProvider<Lane>{
                 title: "Execute",
                 command: "fastlane-launcher.executeShell",
                 arguments: [`${this.config.fastlaneCommand} ${element.label}`],
-            }
+            },
+
         };
     }
 
@@ -112,7 +127,7 @@ class TreeItem extends vscode.TreeItem {
         super(
             label,
             children === undefined ? vscode.TreeItemCollapsibleState.None :
-                vscode.TreeItemCollapsibleState.Expanded
+                vscode.TreeItemCollapsibleState.Expanded,
         );
         this.children = children;
         this.description = description;

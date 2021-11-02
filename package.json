@@ -4,9 +4,10 @@
 	"description": "This is a simple extension for VsCode that parses and displays all the available lanes present in your Fastfile.",
 	"publisher": "smsimone",
 	"repository": {
+		"type": "git",
 		"url": "https://github.com/smsimone/fastlane_launcher"
 	},
-	"version": "0.0.5",
+	"version": "0.0.7",
 	"engines": {
 		"vscode": "^1.58.0"
 	},
@@ -36,6 +37,18 @@
 					"title": "Fastlane custom command",
 					"description": "The command you want to use to launch fastlane",
 					"default": "fastlane",
+					"type": "string"
+				},
+				"fastlane-launcher.showPrivate": {
+					"title": "Show private lanes",
+					"description": "Allows to show private lanes in the explorer",
+					"default": false,
+					"type": "boolean"
+				},
+				"fastlane-launcher.privateLaneGroupName": {
+					"title": "Private lane group name",
+					"description": "The name that the group of all the private lanes",
+					"default": "Private",
 					"type": "string"
 				}
 			}

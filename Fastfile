@@ -16,3 +16,13 @@ end
 lane :test_lane_4 do 
 
 end
+
+#TAG private
+private_lane :test_lane_5 do 
+
+end
+
+#TAG private
+private_lane :test_lane_6 do 
+
+end

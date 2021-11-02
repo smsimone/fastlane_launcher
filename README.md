@@ -5,9 +5,9 @@ This is a simple extension for VsCode that parses and displays all the available
 # Features
 
 - All your lanes are inserted in a lateral menu with their description for a better handling of your automations
-    ![lanes](resources/readme_files/lanes.png)
+  ![lanes](resources/readme_files/lanes.png)
 - With `#TAG` comment you can also group them
-    ![grouped](resources/readme_files/grouped_lanes.png)
+  ![grouped](resources/readme_files/grouped_lanes.png)
 
 ## Extension Settings
 
@@ -16,8 +16,17 @@ The settings exposed by this extension are:
 - `fastlane-launcher.fastlaneCommand`: with this you can specify which command should use to launch the lanes. By default it's `fastlane`, but you may use `bundle exec fastlane`
 
 # Release notes
+
+# 0.0.7
+
+- Fixed `private_lane` and `lane` description parsing
+- Added the config to show private lanes in explorer
+- Private lanes will be shown in a custom named group
+
 # 0.0.5
+
 - Modified README with some images of how it works
+
 # 0.0.4
 
 - Fixed automatic `Fastfile` finding

@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import { Lane } from './lane';
 
 const _laneStarting = "lane :";
-const _privateLaneStarting = 'private_lane :';
 const _descriptionStarting = "desc :";
 const _laneTag = '#TAG ';
 
@@ -18,9 +17,9 @@ export function parseFastfile(fastfilePath: string): Lane[] {
     let lastTag: string = "";
 
     content.split("\n").forEach((line) => {
-        if (line.includes(_laneStarting) && !line.includes(_privateLaneStarting)) {
+        if (line.includes(_laneStarting)) {
             var name = line.split(" ")[1].replace(":", "");
-            commands.push(new Lane(name, lastDesc, lastTag));
+            commands.push(new Lane(name, line.includes("private"), lastDesc, lastTag));
             lastDesc = "";
             lastTag = "";
         } else if (line.includes(_descriptionStarting)) {
