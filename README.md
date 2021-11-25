@@ -17,6 +17,10 @@ The settings exposed by this extension are:
 
 # Release notes
 
+# 0.0.8
+
+- Added the possibility to use `#ALIAS` comment to define an alias for a lane
+
 # 0.0.7
 
 - Fixed `private_lane` and `lane` description parsing

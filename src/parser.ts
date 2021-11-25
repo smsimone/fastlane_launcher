@@ -4,6 +4,7 @@ import { Lane } from './lane';
 const _laneStarting = "lane :";
 const _descriptionStarting = "desc :";
 const _laneTag = '#TAG ';
+const _laneAlias = "#ALIAS ";
 
 /**
  * Parses the Fastfile to search the available lanes
@@ -14,19 +15,23 @@ export function parseFastfile(fastfilePath: string): Lane[] {
     let commands: Lane[] = [];
 
     let lastDesc: string = "";
-    let lastTag: string = "";
+    let lastTag: string | undefined;
+    let lastAlias: string | undefined;
 
     content.split("\n").forEach((line) => {
         if (line.includes(_laneStarting)) {
             var name = line.split(" ")[1].replace(":", "");
-            commands.push(new Lane(name, line.includes("private"), lastDesc, lastTag));
+            commands.push(new Lane(name, line.includes("private"), lastDesc, lastTag, lastAlias));
             lastDesc = "";
-            lastTag = "";
+            lastTag = undefined;
+            lastAlias = undefined;
         } else if (line.includes(_descriptionStarting)) {
             var description = line.replace(_descriptionStarting, "").replace("\"", "").replace("\"", "");
             lastDesc += ` ${description}`;
         } else if (line.includes(_laneTag)) {
             lastTag = line.replace(_laneTag, "").replace("\"", "").replace("\"", "");
+        } else if (line.includes(_laneAlias)) {
+            lastAlias = line.replace(_laneAlias, "").replace("\"", "").replace("\"", "");
         }
     });
 

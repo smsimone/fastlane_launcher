@@ -10,13 +10,19 @@ export class Lane implements vscode.QuickPickItem {
     picked?: boolean | undefined;
     alwaysShow?: boolean | undefined;
     tag?: string | undefined;
+    alias?: string | undefined;
     privateLane: boolean;
 
-    constructor(label: string, privateLane: boolean, description?: string, tag?: string) {
+    constructor(label: string, privateLane: boolean, description?: string, tag?: string, alias?: string) {
         this.label = label;
         this.description = description;
         this.tag = tag;
         this.privateLane = privateLane;
+        this.alias = alias;
+    }
+
+    public getLabel(): string {
+        return this.alias ?? this.label;
     }
 }
 
@@ -62,7 +68,7 @@ export class LaneGroupProvider implements vscode.TreeDataProvider<TreeItem>{
             } else {
                 description = g.tag;
             }
-            this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.label, l.description, undefined, `${this.config.fastlaneCommand} ${l.label}`))));
+            this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.getLabel(), l.description, undefined, `${this.config.fastlaneCommand} ${l.label}`))));
         });
     }
 
