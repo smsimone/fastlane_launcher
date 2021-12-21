@@ -19,6 +19,8 @@ export function parseFastfile(fastfilePath: string): Lane[] {
     let lastAlias: string | undefined;
 
     content.split("\n").forEach((line) => {
+        line = line.trim();
+
         if (line.includes(_laneStarting)) {
             var name = line.split(" ")[1].replace(":", "");
             commands.push(new Lane(name, line.includes("private"), lastDesc, lastTag, lastAlias));

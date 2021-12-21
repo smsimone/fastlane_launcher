@@ -17,6 +17,10 @@ The settings exposed by this extension are:
 
 # Release notes
 
+# 0.0.9
+
+- Fix issue [#1](https://github.com/smsimone/fastlane_launcher/issues/1)
+
 # 0.0.8
 
 - Added the possibility to use `#ALIAS` comment to define an alias for a lane
