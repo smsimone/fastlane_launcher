@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { Config } from './config';
-import { LaneGroupProvider, LaneProvider } from './lane';
+import { LaneGroupProvider } from './lane/lane_group_provider';
 import { LocalStorageService } from './localStorage';
 import { parseFastfile } from './parser';
 import { StringQuickPick } from './stringQuickPick';
@@ -12,8 +12,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	let storageManager = new LocalStorageService(context.workspaceState);
 
 	let config: Config = new Config(storageManager);
-
-
 
 	vscode.workspace.onDidChangeConfiguration(event => {
 		let affected = event.affectsConfiguration("fastlane-launcher");
@@ -33,7 +31,6 @@ export async function activate(context: vscode.ExtensionContext) {
 	 * If the saved document is the Fasftile, it will be reloaded
 	 */
 	vscode.workspace.onDidSaveTextDocument(event => { if (event.fileName.includes('Fastfile')) { populateView(config); } });
-
 	if (!config.fastfilePath) {
 		getFastfilePath(config);
 	} else {
@@ -91,7 +88,7 @@ async function getFastfilePath(config: Config) {
 
 	let path: string | undefined;
 
-	const uris = await vscode.workspace.findFiles('**/Fastfile', null);
+	const uris = await vscode.workspace.findFiles('**/[F|f]astfile', null);
 
 	console.log(`[FASTLANE-LAUNCHER] Found uris: ${uris}`);
 
@@ -142,10 +139,7 @@ function populateView(config: Config) {
 	try {
 		const lanes = parseFastfile(config.fastfilePath);
 		let provider = new LaneGroupProvider(lanes, config);
-
-		vscode.window.createTreeView('available_commands', {
-			treeDataProvider: provider
-		});
+		vscode.window.createTreeView('available_commands', { treeDataProvider: provider });
 	} catch (e) {
 		console.error(`Got error while creating tree view: ${e}`);
 		vscode.window.showErrorMessage("Got error while parsing Fastfile");

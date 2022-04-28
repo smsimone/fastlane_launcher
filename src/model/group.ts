@@ -1,5 +1,5 @@
 import { languages } from "vscode";
-import { Lane } from "../lane";
+import { Lane } from "../lane/lane";
 
 export class Group {
     tag?: string;

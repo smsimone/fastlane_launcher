@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { Lane } from './lane';
+import { Lane } from './lane/lane';
 
 const _laneStarting = "lane :";
 const _descriptionStarting = "desc :";
@@ -23,7 +23,8 @@ export function parseFastfile(fastfilePath: string): Lane[] {
 
         if (line.includes(_laneStarting)) {
             var name = line.split(" ")[1].replace(":", "");
-            commands.push(new Lane(name, line.includes("private"), lastDesc, lastTag, lastAlias));
+            let lane = new Lane(name, line.includes("private"), lastDesc, lastTag, lastAlias);
+            commands.push(lane);
             lastDesc = "";
             lastTag = undefined;
             lastAlias = undefined;
