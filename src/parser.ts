@@ -6,6 +6,9 @@ const _descriptionStarting = "desc :";
 const _laneTag = '#TAG ';
 const _laneAlias = "#ALIAS ";
 
+const _metadataStart = '# metadata_start';
+const _metadataEnd = '# metadata_end';
+
 /**
  * Parses the Fastfile to search the available lanes
  * @returns a list with all the commands contained

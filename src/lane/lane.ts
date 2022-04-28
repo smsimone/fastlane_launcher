@@ -1,22 +1,24 @@
 import * as vscode from 'vscode';
 
 export class Lane implements vscode.QuickPickItem {
-    label: string;
+    _label: string;
     description?: string | undefined;
-    detail?: string | undefined;
     picked?: boolean | undefined;
     alwaysShow?: boolean | undefined;
-    tag?: string | undefined;
-    alias?: string | undefined;
+    _tag?: string | undefined;
+    _alias?: string | undefined;
     privateLane: boolean;
 
     constructor(label: string, privateLane: boolean, description?: string, tag?: string, alias?: string) {
-        this.label = label;
+        this._label = label;
+        this._tag = tag;
+        this._alias = alias;
         this.description = description;
-        this.tag = tag;
         this.privateLane = privateLane;
-        this.alias = alias;
     }
 
-    public getLabel(): string { return this.alias ?? this.label; }
+    public get label(): string { return this._alias ?? this._label; }
+
+    public get tag(): string | undefined { return this._tag; }
+
 }
