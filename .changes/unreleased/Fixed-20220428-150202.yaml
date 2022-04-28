@@ -1,0 +1,3 @@
+kind: Fixed
+body: Fastfile file search is now case-insensitive
+time: 2022-04-28T15:02:02.63695+02:00
