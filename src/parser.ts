@@ -2,14 +2,6 @@ import * as fs from 'fs';
 import { Lane } from './lane/lane';
 import { LaneMetadata } from './lane/lane_metadata';
 
-const _laneStarting = "lane :";
-const _descriptionStarting = "desc :";
-const _laneTag = '#TAG ';
-const _laneAlias = "#ALIAS ";
-
-const _metadataStart = '# metadata_start';
-const _metadataEnd = '# metadata_end';
-
 /**
  * Parses the Fastfile to search the available lanes
  * @returns a list with all the commands contained
@@ -17,12 +9,7 @@ const _metadataEnd = '# metadata_end';
 export function parseFastfile(fastfilePath: string): Lane[] {
     let content = fs.readFileSync(fastfilePath, { encoding: 'utf-8' });
     let commands: Lane[] = [];
-
-    let lastDesc: string = "";
-    let lastTag: string | undefined;
-    let lastAlias: string | undefined;
-
-
+    
     const contentLines = content.split('\n');
 
     const regex = new RegExp('^(private_)?lane');
