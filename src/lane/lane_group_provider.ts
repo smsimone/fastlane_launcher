@@ -16,13 +16,13 @@ export class LaneGroupProvider implements vscode.TreeDataProvider<TreeItem>{
     constructor(lanes: Lane[], config: Config) {
         this.config = config;
 
-        this.lanes = lanes.filter((lane) => {
+        this.lanes = lanes.filter(l => !l.isCommented).filter((lane) => {
             if (config.showPrivateLanes) { return true; }
-            else { return !lane.privateLane; }
+            else { return !lane.isPrivate; }
         });
 
         this.lanes.forEach((lane) => {
-            if (lane.privateLane) {
+            if (lane.isPrivate) {
                 let group: Group | undefined = this.groups.find((group) => group.tag === config.privateLaneGroupName);
                 if (group === undefined) {
                     group = new Group(config.privateLaneGroupName);

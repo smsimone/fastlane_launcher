@@ -1,24 +1,37 @@
 import * as vscode from 'vscode';
+import { LaneMetadata } from './lane_metadata';
 
 export class Lane implements vscode.QuickPickItem {
-    _label: string;
-    description?: string | undefined;
-    picked?: boolean | undefined;
-    alwaysShow?: boolean | undefined;
-    _tag?: string | undefined;
-    _alias?: string | undefined;
-    privateLane: boolean;
+    /**
+     * The default name of the lane
+     */
+    readonly _label: string;
 
-    constructor(label: string, privateLane: boolean, description?: string, tag?: string, alias?: string) {
+    /**
+     * Flag that indicates if a lane is private or not
+     */
+    readonly isPrivate: boolean;
+
+    /**
+     * Flag that indicates if a lane was commented or not
+     */
+    readonly isCommented: boolean;
+
+    /**
+     * Metadata of the current lane
+     */
+    readonly _metadata: LaneMetadata;
+
+    constructor(label: string, privateLane: boolean, metadata: LaneMetadata, isCommented: boolean = false) {
         this._label = label;
-        this._tag = tag;
-        this._alias = alias;
-        this.description = description;
-        this.privateLane = privateLane;
+        this.isPrivate = privateLane;
+        this._metadata = metadata;
+        this.isCommented = isCommented;
     }
 
-    public get label(): string { return this._alias ?? this._label; }
+    public get label(): string { return this._metadata.alias ?? this._label; }
 
-    public get tag(): string | undefined { return this._tag; }
+    public get tag(): string | undefined { return this._metadata.tag; }
 
+    public get description(): string | undefined { return this._metadata.description; }
 }

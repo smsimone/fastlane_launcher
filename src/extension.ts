@@ -30,7 +30,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	/**
 	 * If the saved document is the Fasftile, it will be reloaded
 	 */
-	vscode.workspace.onDidSaveTextDocument(event => { if (event.fileName.includes('Fastfile')) { populateView(config); } });
+	vscode.workspace.onDidSaveTextDocument(event => { if (new RegExp('[F|f]astfile', 'i').exec(event.fileName)) { populateView(config); } });
 	if (!config.fastfilePath) {
 		getFastfilePath(config);
 	} else {

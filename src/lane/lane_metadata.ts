@@ -1,14 +1,55 @@
+const _aliasName = '#ALIAS';
+const _tagName = '#TAG';
+const _descName = 'desc :';
+const _paramTag = '@param';
+
 /**
  * Class that contains the metadata for a lane
  */
 export class LaneMetadata {
 
-    private _metadataLines: string[];
+    /**
+     * Contains the tag of the lane
+     */
+    readonly tag: string | undefined;
+    readonly alias: string | undefined;
+    readonly description: string | undefined;
+    readonly params: string[];
 
-    constructor() { this._metadataLines = []; }
+    constructor(lines: string[]) {
+        this.tag = this._getTag(lines);
+        this.alias = this._getAlias(lines);
+        this.description = this._getDescription(lines);
+        this.params = this._getParams(lines);
+    }
 
     /**
-     * @param line the line of metadata to add
+     * @returns The tag of the lane
      */
-    public addNewLine(line: string): void { this._metadataLines.push(line); }
+    _getTag(lines: string[]): string | undefined {
+        const found = lines.filter(l => l.includes(_tagName)).map(l => l.replace(_tagName, '').trim());
+        if (found.length === 0) { return undefined; }
+        return found[0];
+    }
+
+    /**
+     * @returns The tag of the lane
+     */
+    _getAlias(lines: string[]): string | undefined {
+        const found = lines.filter(l => l.includes(_aliasName)).map(l => l.replace(_aliasName, '').trim());
+        if (found.length === 0) { return undefined; }
+        return found[0];
+    }
+
+    /**
+     * @returns The tag of the lane
+     */
+    _getDescription(lines: string[]): string | undefined {
+        return lines.filter(l => l.includes(_descName)).map(l => l.replace(_descName, '')).join(' ');
+    }
+
+    _getParams(lines: string[]): string[] {
+        lines.filter(l => l.includes(_paramTag)).map(l => l.replace(_paramTag, '').trim());
+        return [];
+    }
 }

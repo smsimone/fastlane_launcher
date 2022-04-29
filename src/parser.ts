@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { Lane } from './lane/lane';
+import { LaneMetadata } from './lane/lane_metadata';
 
 const _laneStarting = "lane :";
 const _descriptionStarting = "desc :";
@@ -21,25 +22,35 @@ export function parseFastfile(fastfilePath: string): Lane[] {
     let lastTag: string | undefined;
     let lastAlias: string | undefined;
 
-    content.split("\n").forEach((line) => {
-        line = line.trim();
 
-        if (line.includes(_laneStarting)) {
-            var name = line.split(" ")[1].replace(":", "");
-            let lane = new Lane(name, line.includes("private"), lastDesc, lastTag, lastAlias);
-            commands.push(lane);
-            lastDesc = "";
-            lastTag = undefined;
-            lastAlias = undefined;
-        } else if (line.includes(_descriptionStarting)) {
-            var description = line.replace(_descriptionStarting, "").replace("\"", "").replace("\"", "");
-            lastDesc += ` ${description}`;
-        } else if (line.includes(_laneTag)) {
-            lastTag = line.replace(_laneTag, "").replace("\"", "").replace("\"", "");
-        } else if (line.includes(_laneAlias)) {
-            lastAlias = line.replace(_laneAlias, "").replace("\"", "").replace("\"", "");
+    const contentLines = content.split('\n');
+
+    const regex = new RegExp('^(private_)?lane');
+    const endRegex = new RegExp('^end$');
+
+    const laneIndices: number[] = [];
+
+    for (let i = 0; i < contentLines.length; i++) { if (regex.exec(contentLines[i])) { laneIndices.push(i); } }
+
+    for (let currentIndex of laneIndices) {
+        let metadataLines: string[] = [];
+
+        for (let j = currentIndex; j > 0; j--) {
+            if (endRegex.exec(contentLines[j])) { break; }
+            metadataLines.push(contentLines[j]);
         }
-    });
+
+        let metadata = new LaneMetadata(metadataLines);
+        const currentLane = contentLines[currentIndex];
+
+        const laneName = currentLane.split(' ')[1].replace(':', '');
+        const isPrivate = currentLane.includes('private_');
+        const isCommented = new RegExp('#.*(private_)?lane.*do');
+
+        const lane = new Lane(laneName, isPrivate, metadata, isCommented.exec(currentLane) !== null);
+        commands.push(lane);
+
+    }
 
     return commands;
 }
