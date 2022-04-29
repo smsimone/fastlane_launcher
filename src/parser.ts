@@ -40,8 +40,8 @@ export function parseFastfile(fastfilePath: string): Lane[] {
             metadataLines.push(contentLines[j]);
         }
 
-        let metadata = new LaneMetadata(metadataLines);
         const currentLane = contentLines[currentIndex];
+        let metadata = new LaneMetadata(metadataLines);
 
         const laneName = currentLane.split(' ')[1].replace(':', '');
         const isPrivate = currentLane.includes('private_');

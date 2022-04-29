@@ -49,7 +49,13 @@ export class LaneMetadata {
     }
 
     _getParams(lines: string[]): string[] {
-        lines.filter(l => l.includes(_paramTag)).map(l => l.replace(_paramTag, '').trim());
-        return [];
+        return lines.filter(l => l.includes(_paramTag)).map(l => {
+            const regex = new RegExp('#.*@param (.*)');
+            const match = regex.exec(l);
+            if (match) {
+                return match[1];
+            }
+            return undefined;
+        }).filter(l => l !== undefined) as string[];
     }
 }
