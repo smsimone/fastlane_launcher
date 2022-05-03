@@ -31,6 +31,8 @@ export class Lane implements vscode.QuickPickItem {
 
     public get label(): string { return this._metadata.alias ?? this._label; }
 
+    public get command(): string { return this._label; }
+
     public get tag(): string | undefined { return this._metadata.tag; }
 
     public get description(): string | undefined { return this._metadata.description; }

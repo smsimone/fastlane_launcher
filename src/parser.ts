@@ -9,7 +9,7 @@ import { LaneMetadata } from './lane/lane_metadata';
 export function parseFastfile(fastfilePath: string): Lane[] {
     let content = fs.readFileSync(fastfilePath, { encoding: 'utf-8' });
     let commands: Lane[] = [];
-    
+
     const contentLines = content.split('\n');
 
     const regex = new RegExp('^(private_)?lane');

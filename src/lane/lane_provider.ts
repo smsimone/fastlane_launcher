@@ -29,7 +29,7 @@ export class LaneProvider implements vscode.TreeDataProvider<Lane>{
             command: {
                 title: "Execute",
                 command: "fastlane-launcher.executeShell",
-                arguments: [`${this.config.fastlaneCommand} ${element.label}`],
+                arguments: [`${this.config.fastlaneCommand} ${element.command}`],
             },
 
         };
