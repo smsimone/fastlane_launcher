@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Config } from '../config';
-import { Lane } from './lane';
 import { Group } from '../model/group';
+import { Lane } from './lane';
 import { TreeItem } from './tree_item';
 
 
