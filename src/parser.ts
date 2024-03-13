@@ -7,6 +7,8 @@ import { LaneMetadata } from './lane/lane_metadata';
  * @returns a list with all the commands contained
  */
 export function parseFastfile(fastfilePath: string): Lane[] {
+    if (!fs.existsSync(fastfilePath)) { return []; }
+
     let content = fs.readFileSync(fastfilePath, { encoding: 'utf-8' });
     let commands: Lane[] = [];
 

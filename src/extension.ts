@@ -5,14 +5,12 @@ import { LaneGroupProvider } from "./lane/lane_group_provider";
 import { LocalStorageService } from "./localStorage";
 import { parseFastfile } from "./parser";
 import { StringQuickPick } from "./stringQuickPick";
-import { pathToFileURL } from "url";
 import path = require("path");
 
 export async function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Fastlane launcher has been activated");
 
   let storageManager = new LocalStorageService(context.workspaceState);
-
   let config: Config = new Config(storageManager);
 
   vscode.workspace.onDidChangeConfiguration((event) => {
@@ -23,7 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }
 
     if (!config.fastfilePath) {
-      getFastfilePath(config);
+      getFastfilePath({ config });
     } else {
       populateView(config);
     }
@@ -33,12 +31,22 @@ export async function activate(context: vscode.ExtensionContext) {
    * If the saved document is the Fasftile, it will be reloaded
    */
   vscode.workspace.onDidSaveTextDocument((event) => {
+    console.log(`Received didSave event: ${event}`);
     if (new RegExp("[F|f]astfile", "i").exec(event.fileName)) {
+      getFastfilePath({ config });
+    }
+  });
+
+  vscode.workspace.onDidDeleteFiles((event) => {
+    console.log(`Deleted files ${event.files}`);
+    const regex = new RegExp("[F|f]astfile", "i");
+    if (event.files.map(f => f.path).some(p => regex.exec(p))) {
       populateView(config);
     }
   });
+
   if (!config.fastfilePath) {
-    getFastfilePath(config);
+    getFastfilePath({ config });
   } else {
     populateView(config);
   }
@@ -72,7 +80,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "fastlane-launcher.changeFastfilePath",
       () => {
-        getFastfilePath(config);
+        getFastfilePath({ config });
       }
     )
   );
@@ -111,12 +119,17 @@ function executeShellCommand(
  * Sets the `config.fastFilePath` to a new value
  * @param config
  */
-async function getFastfilePath(config: Config) {
+async function getFastfilePath({ config, refreshView = true }: { config: Config, refreshView?: boolean }) {
   let fastfilePath: string = "";
 
   let tmpPath: string | undefined;
 
   const uris = await vscode.workspace.findFiles("**/[F|f]astfile", null);
+
+  if (uris.length === 0) {
+    vscode.window.showInformationMessage("No fastfile found in current directory");
+    return;
+  }
 
   console.log(`[FASTLANE-LAUNCHER] Found uris: ${uris}`);
 
@@ -132,30 +145,10 @@ async function getFastfilePath(config: Config) {
       quickPick.dispose();
     });
     return;
-  }
-
-  if (uris.length === 1) {
+  } else if (uris.length === 1) {
     fastfilePath = uris[0].path;
     console.log(`Found fastfile at ${tmpPath}`);
-  } else {
-    console.log("[FASTLANE-LAUNCHER] Requesting the path to the user");
-    while (!tmpPath) {
-      tmpPath = await vscode.window.showInputBox({
-        title: "Input the path to Fastfile",
-      });
-      if (
-        tmpPath &&
-        fs.existsSync(tmpPath!) &&
-        fs.statSync(tmpPath!).isFile()
-      ) {
-        config.fastfilePath = tmpPath!;
-        fastfilePath = tmpPath!;
-      } else {
-        vscode.window.showErrorMessage("The path you've inserted is not valid");
-        tmpPath = undefined;
-      }
-    }
-  }
+  } 
 
   const { platform } = process;
 
@@ -170,7 +163,7 @@ async function getFastfilePath(config: Config) {
   const fileExists = fs.existsSync(localePath);
   if (fileExists) {
     config.fastfilePath = localePath;
-    populateView(config);
+    if (refreshView) { populateView(config); }
   }
 }
 
