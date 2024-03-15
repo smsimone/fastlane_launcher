@@ -1,5 +1,5 @@
-import { LocalStorageService } from './localStorage';
 import * as vscode from 'vscode';
+import { LocalStorageService } from './localStorage';
 export class Config {
     private _fastfilePath: string | undefined;
     private _fastlaneCommand: string;
@@ -14,7 +14,6 @@ export class Config {
         this._fastlaneCommand = config.get<string>('fastlaneCommand')!;
         this._showPrivateLanes = config.get<boolean>('showPrivate') ?? false;
         this._privateLaneGroupName = config.get<string>('privateLaneGroupName') ?? 'Private';
-        this._restore();
     }
 
     public get fastlaneCommand(): string {
@@ -43,13 +42,5 @@ export class Config {
      */
     _saveCache() {
         this._storageManager.setValue<string>("fastfilePath", this._fastfilePath!);
-        console.log("Saved fatfilepath");
-    }
-    /**
-     * Recovers the old value from cache
-     */
-    _restore() {
-        //this._fastfilePath = this._storageManager.getValue<string | undefined>("fastfilePath");
-        console.log(`restored fastfilepath: ${this._fastfilePath}`);
     }
 }

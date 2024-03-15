@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { Config } from "./config";
 import { LaneGroupProvider } from "./lane/lane_group_provider";
 import { LocalStorageService } from "./localStorage";
+import logger from "./logger";
 import { parseFastfile } from "./parser";
 import { StringQuickPick } from "./stringQuickPick";
 import path = require("path");
@@ -16,7 +17,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidChangeConfiguration((event) => {
     let affected = event.affectsConfiguration("fastlane-launcher");
     if (affected) {
-      console.log("Should reload configuration");
+      logger.info("Reloading configuration");
       config = new Config(storageManager);
     }
 
@@ -31,16 +32,16 @@ export async function activate(context: vscode.ExtensionContext) {
    * If the saved document is the Fasftile, it will be reloaded
    */
   vscode.workspace.onDidSaveTextDocument((event) => {
-    console.log(`Received didSave event: ${event}`);
     if (new RegExp("[F|f]astfile", "i").exec(event.fileName)) {
+      logger.info("Reading again fastfile");
       getFastfilePath({ config });
     }
   });
 
   vscode.workspace.onDidDeleteFiles((event) => {
-    console.log(`Deleted files ${event.files}`);
     const regex = new RegExp("[F|f]astfile", "i");
     if (event.files.map(f => f.path).some(p => regex.exec(p))) {
+      logger.info("Reading again fastfile");
       populateView(config);
     }
   });
@@ -122,8 +123,6 @@ function executeShellCommand(
 async function getFastfilePath({ config, refreshView = true }: { config: Config, refreshView?: boolean }) {
   let fastfilePath: string = "";
 
-  let tmpPath: string | undefined;
-
   const uris = await vscode.workspace.findFiles("**/[F|f]astfile", null);
 
   if (uris.length === 0) {
@@ -131,9 +130,9 @@ async function getFastfilePath({ config, refreshView = true }: { config: Config,
     return;
   }
 
-  console.log(`[FASTLANE-LAUNCHER] Found uris: ${uris}`);
 
   if (uris.length > 1) {
+    logger.info(`Found multiple fastfiles: ${uris}`);
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = uris.map((uri) => new StringQuickPick(uri.path));
     quickPick.show();
@@ -146,8 +145,8 @@ async function getFastfilePath({ config, refreshView = true }: { config: Config,
     });
     return;
   } else if (uris.length === 1) {
+    logger.info(`Found a single fastfile at path: ${uris}`);
     fastfilePath = uris[0].path;
-    console.log(`Found fastfile at ${tmpPath}`);
   } 
 
   const { platform } = process;
@@ -158,12 +157,15 @@ async function getFastfilePath({ config, refreshView = true }: { config: Config,
   if (platform === "win32" && localePath.startsWith("\\")) {
     /// Removes the leading \ in case of windows
     localePath = localePath.substring(1);
+    logger.info(`Made some magic on the path to make it windows like. New path: ${localePath}`);
   }
 
   const fileExists = fs.existsSync(localePath);
   if (fileExists) {
     config.fastfilePath = localePath;
     if (refreshView) { populateView(config); }
+  } else {
+    logger.warn("Failed to access the file");
   }
 }
 
@@ -179,7 +181,12 @@ function populateView(config: Config) {
       treeDataProvider: provider,
     });
   } catch (e) {
-    console.error(`Got error while creating tree view: ${e}`);
+    logger.error(`Got error while creating tree view: ${e}`);
+    if (e instanceof Error && e.stack) {
+      logger.error(e.stack);
+    } else {
+      logger.warn("Missing error's stacktrace");
+    }
     vscode.window.showErrorMessage("Got error while parsing Fastfile");
   }
 }
