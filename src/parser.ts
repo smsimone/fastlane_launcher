@@ -15,7 +15,6 @@ export function parseFastfile(fastfilePath: string): Lane[] {
     let commands: Lane[] = [];
 
     const contentLines = content.split('\n').map(l => l.trim());
-    const laneIndices: number[] = [];
 
     let group: string[] = [];
     let inLane: boolean = false;

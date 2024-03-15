@@ -1,5 +1,5 @@
 
-const regex = new RegExp("#PARAM \{(?<NAME>[a-z_-]*)\} *(?<DEFAULT>\(.*\))? *(?<COMMENT>.*)?$");
+const regex = new RegExp("#PARAM \{(?<NAME>[a-z_-]*)\} *?(\((?<DEFAULT>.*)\))? *?(?<COMMENT>.*)?$");
 
 export class LaneParam {
 
@@ -19,10 +19,9 @@ export class LaneParam {
      * @returns a new LaneParam object
      */
     static parseFromLine(line: string): LaneParam {
-        const matches: RegExpExecArray | null = regex.exec(line.trim());
-        if (!matches) { throw Error("Invalid param line"); }
-
-        const groups = matches.groups;
+        const match = line.match(/#PARAM \{(?<NAME>.*)\} (\((?<DEFAULT>.*)\))?( )?(?<COMMENT>.*)$/);
+        if (!match) { throw new Error("Invalid param line"); }
+        const groups = match.groups;
         if (!groups) { throw Error("Missing groups"); }
         const name = groups['NAME'];
         const defaultValue = groups['DEFAULT'];

@@ -47,12 +47,13 @@ export class LaneGroupProvider implements vscode.TreeDataProvider<TreeItem>{
             } else {
                 description = g.tag;
             }
-            this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.label, l.description, undefined, `${this.config.fastlaneCommand} ${l.command}`))));
+            this.data.push(new TreeItem(description, '', g.lanes.map((l) => new TreeItem(l.label, l.description, undefined, l._label))));
         });
     }
 
     onDidChangeTreeData?: vscode.Event<void | TreeItem | null | undefined> | undefined;
-    getTreeItem(element: TreeItem): TreeItem | Thenable<TreeItem> {
+
+    getTreeItem(element: TreeItem): TreeItem {
         return element;
     }
 
