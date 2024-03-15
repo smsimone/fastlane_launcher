@@ -2,9 +2,6 @@ import * as fs from 'fs';
 import { Lane } from './lane/lane';
 import { LaneMetadata } from './lane/lane_metadata';
 
-const _laneRegex = new RegExp('^(private_)?lane');
-const _endLaneRegex = new RegExp('^end$');
-
 /**
  * Parses the Fastfile to search the available lanes
  * @returns a list with all the commands contained
@@ -12,46 +9,31 @@ const _endLaneRegex = new RegExp('^end$');
 export function parseFastfile(fastfilePath: string): Lane[] {
     if (!fs.existsSync(fastfilePath)) { return []; }
     let content = fs.readFileSync(fastfilePath, { encoding: 'utf-8' });
-    let commands: Lane[] = [];
 
     const contentLines = content.split('\n').map(l => l.trim());
 
-    let group: string[] = [];
-    let inLane: boolean = false;
-    let groups: string[][] = [[]];
+    const lanes = content.match(/^(private_)?lane(.|\n)*?^end/gm);
+    if (!lanes) { throw Error(`No lanes found`); }
 
-    for (let idx = 0; idx < contentLines.length; idx++) {
-        const line = contentLines[idx];
-        group.push(line);
-        if (_laneRegex.exec(line)) {
-            inLane = true;
-        } else if (_endLaneRegex.exec(line)) {
-            inLane = false;
-            groups.push(new Array(...group));
-            group = [];
-        }
-    }
-
-    groups = groups
-        .map(g => g.filter(l => l.trim().length > 0))
-        .filter(g => g.length > 0);
-
-    for (const group of groups) {
+    return lanes.map(lane => {
+        const laneHeader = lane.split("\n")[0].trim();
+        const startIdx = contentLines.indexOf(laneHeader.trim());
+        let idx = startIdx;
+        let line: string;
         let metadataLines: string[] = [];
-        for (const line of group) {
-            if (_laneRegex.exec(line)) { break; }
+        do {
+            line = contentLines[idx];
+            if (!line) { break; }
             metadataLines.push(line);
-        }
+            idx--;
+        } while (!line.trim().match(/^end$/) || idx !== 0);
+
 
         let metadata = new LaneMetadata(metadataLines);
-        let currentLane = group.filter(l => _laneRegex.exec(l))[0];
-        const laneName = currentLane.split(' ')[1].replace(':', '');
-        const isPrivate = currentLane.includes('private_');
+        let laneName = laneHeader.match(/^(private_)?lane :(?<NAME>.*) do/)!.groups!['NAME'];
+        const isPrivate = laneHeader.includes('private_');
         const isCommented = new RegExp('#.*(private_)?lane.*do');
 
-        const lane = new Lane(laneName, isPrivate, metadata, isCommented.exec(currentLane) !== null);
-        commands.push(lane);
-    }
-
-    return commands;
+        return new Lane(laneName, isPrivate, metadata, isCommented.exec(laneHeader) !== null);
+    });
 }
