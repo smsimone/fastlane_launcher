@@ -17,6 +17,18 @@ The settings exposed by this extension are:
 
 # Release notes
 
+# 0.2.0
+
+- Now it's possible to expose the lane's variables by using the `#PARA` tag.
+```
+#PARAM {var_name} (default_value) comment
+#PARAM {var_name} comment
+#PARAM {var_name}
+```
+
+Both `default_value` and `comment` are optional.
+
+
 # 0.0.9
 
 - Fix issue [#1](https://github.com/smsimone/fastlane_launcher/issues/1)
