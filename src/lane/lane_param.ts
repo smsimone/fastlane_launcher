@@ -19,7 +19,7 @@ export class LaneParam {
      * @returns a new LaneParam object
      */
     static parseFromLine(line: string): LaneParam {
-        const match = line.match(/#PARAM \{(?<NAME>.*)\} (\((?<DEFAULT>.*)\))?( )?(?<COMMENT>.*)$/);
+        const match = line.match(/#PARAM \{(?<NAME>[a-zA-Z0-9_-]*)\}( )?(\((?<DEFAULT>.*)\))??( )?(?<COMMENT>.*)?/);
         if (!match) { throw new Error("Invalid param line"); }
         const groups = match.groups;
         if (!groups) { throw Error("Missing groups"); }
