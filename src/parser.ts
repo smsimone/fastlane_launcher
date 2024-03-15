@@ -8,38 +8,32 @@ import { LaneMetadata } from './lane/lane_metadata';
  */
 export function parseFastfile(fastfilePath: string): Lane[] {
     if (!fs.existsSync(fastfilePath)) { return []; }
-
     let content = fs.readFileSync(fastfilePath, { encoding: 'utf-8' });
-    let commands: Lane[] = [];
 
-    const contentLines = content.split('\n');
+    const contentLines = content.split('\n').map(l => l.trim());
 
-    const regex = new RegExp('^(private_)?lane');
-    const endRegex = new RegExp('^end$');
+    const lanes = content.match(/^(private_)?lane(.|\n)*?^end/gm);
+    if (!lanes) { throw Error(`No lanes found`); }
 
-    const laneIndices: number[] = [];
-
-    for (let i = 0; i < contentLines.length; i++) { if (regex.exec(contentLines[i])) { laneIndices.push(i); } }
-
-    for (let currentIndex of laneIndices) {
+    return lanes.map(lane => {
+        const laneHeader = lane.split("\n")[0].trim();
+        const startIdx = contentLines.indexOf(laneHeader.trim());
+        let idx = startIdx;
+        let line: string;
         let metadataLines: string[] = [];
+        do {
+            line = contentLines[idx];
+            if (!line) { break; }
+            metadataLines.push(line);
+            idx--;
+        } while (!line.trim().match(/^end$/) || idx !== 0);
 
-        for (let j = currentIndex; j > 0; j--) {
-            if (endRegex.exec(contentLines[j])) { break; }
-            metadataLines.push(contentLines[j]);
-        }
 
-        const currentLane = contentLines[currentIndex];
         let metadata = new LaneMetadata(metadataLines);
-
-        const laneName = currentLane.split(' ')[1].replace(':', '');
-        const isPrivate = currentLane.includes('private_');
+        let laneName = laneHeader.match(/^(private_)?lane :(?<NAME>.*) do/)!.groups!['NAME'];
+        const isPrivate = laneHeader.includes('private_');
         const isCommented = new RegExp('#.*(private_)?lane.*do');
 
-        const lane = new Lane(laneName, isPrivate, metadata, isCommented.exec(currentLane) !== null);
-        commands.push(lane);
-
-    }
-
-    return commands;
+        return new Lane(laneName, isPrivate, metadata, isCommented.exec(laneHeader) !== null);
+    });
 }

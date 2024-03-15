@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { Config } from "./config";
+import { Lane } from "./lane/lane";
 import { LaneGroupProvider } from "./lane/lane_group_provider";
 import { LocalStorageService } from "./localStorage";
 import logger from "./logger";
@@ -8,23 +9,26 @@ import { parseFastfile } from "./parser";
 import { StringQuickPick } from "./stringQuickPick";
 import path = require("path");
 
+let _lanes: Lane[] = [];
+let _config: Config;
+
 export async function activate(context: vscode.ExtensionContext) {
   vscode.window.showInformationMessage("Fastlane launcher has been activated");
 
   let storageManager = new LocalStorageService(context.workspaceState);
-  let config: Config = new Config(storageManager);
+  _config = new Config(storageManager);
 
   vscode.workspace.onDidChangeConfiguration((event) => {
     let affected = event.affectsConfiguration("fastlane-launcher");
     if (affected) {
       logger.info("Reloading configuration");
-      config = new Config(storageManager);
+      _config = new Config(storageManager);
     }
 
-    if (!config.fastfilePath) {
-      getFastfilePath({ config });
+    if (!_config.fastfilePath) {
+      getFastfilePath({ config: _config });
     } else {
-      populateView(config);
+      populateView(_config);
     }
   });
 
@@ -34,7 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.workspace.onDidSaveTextDocument((event) => {
     if (new RegExp("[F|f]astfile", "i").exec(event.fileName)) {
       logger.info("Reading again fastfile");
-      getFastfilePath({ config });
+      getFastfilePath({ config: _config });
     }
   });
 
@@ -42,14 +46,14 @@ export async function activate(context: vscode.ExtensionContext) {
     const regex = new RegExp("[F|f]astfile", "i");
     if (event.files.map(f => f.path).some(p => regex.exec(p))) {
       logger.info("Reading again fastfile");
-      populateView(config);
+      populateView(_config);
     }
   });
 
-  if (!config.fastfilePath) {
-    getFastfilePath({ config });
+  if (!_config.fastfilePath) {
+    getFastfilePath({ config: _config });
   } else {
-    populateView(config);
+    populateView(_config);
   }
 
   /**
@@ -57,18 +61,12 @@ export async function activate(context: vscode.ExtensionContext) {
    */
   context.subscriptions.push(
     vscode.commands.registerCommand("fastlane-launcher.showCommands", () => {
-      let commands = parseFastfile(config.fastfilePath);
+      let commands = parseFastfile(_config.fastfilePath);
       var quickPick = vscode.window.createQuickPick();
       quickPick.items = commands;
       quickPick.show();
       quickPick.onDidAccept(() => {
-        var items = quickPick.selectedItems;
-        items.forEach((item) => {
-          executeShellCommand(
-            `${config.fastlaneCommand} ${item.label}`,
-            `Lane: ${item.label}`
-          );
-        });
+        quickPick.selectedItems.forEach((item) => executeShellCommand({ laneName: item.label }));
         quickPick.dispose();
       });
     })
@@ -80,9 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "fastlane-launcher.changeFastfilePath",
-      () => {
-        getFastfilePath({ config });
-      }
+      () => getFastfilePath({ config: _config })
     )
   );
 
@@ -92,9 +88,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "fastlane-launcher.executeShell",
-      (args: string) => {
-        executeShellCommand(args, `Lane: ${args.split(" ")[1]}`);
-      }
+      (args: string) => executeShellCommand({ laneName: args })
     )
   );
 }
@@ -107,13 +101,24 @@ export function deactivate() {
 /**
  * Creates a shell and executes the selected lane
  */
-function executeShellCommand(
-  command: string,
-  shellName: string = "Fastlane launcher"
-) {
+async function executeShellCommand({ laneName, shellName = "Fastlane launcher" }: { laneName: string, shellName?: string }) {
+  const lane = _lanes.find(l => l._label === laneName);
+  if (!lane) { throw Error(`Path "${laneName}" does not exists`); }
+
+  const meta = lane.metadata;
+
+  let inputVar: string[] = [];
+  for await (const p of meta.params) {
+    const input = await vscode.window.showInputBox({
+      placeHolder: p._defaultValue,
+      prompt: `Insert a value for param "${p._name}"`,
+      value: p._defaultValue
+    });
+    inputVar.push(`${p._name}:"${input}"`);
+  }
   let terminal = vscode.window.createTerminal({ name: shellName });
   terminal.show();
-  terminal.sendText(command);
+  terminal.sendText(`${_config.fastlaneCommand} ${laneName} ${inputVar.join(" ")}`);
 }
 
 /**
@@ -175,8 +180,8 @@ async function getFastfilePath({ config, refreshView = true }: { config: Config,
  */
 function populateView(config: Config) {
   try {
-    const lanes = parseFastfile(config.fastfilePath);
-    let provider = new LaneGroupProvider(lanes, config);
+    _lanes = parseFastfile(config.fastfilePath);
+    let provider = new LaneGroupProvider(_lanes, config);
     vscode.window.createTreeView("available_commands", {
       treeDataProvider: provider,
     });
