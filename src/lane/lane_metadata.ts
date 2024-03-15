@@ -1,7 +1,9 @@
+import { LaneParam } from "./lane_param";
+
 const _aliasName = '#ALIAS';
 const _tagName = '#TAG';
 const _descName = 'desc :';
-const _paramTag = '@param';
+const _paramTag = '#PARAM';
 
 /**
  * Class that contains the metadata for a lane
@@ -14,7 +16,7 @@ export class LaneMetadata {
     readonly tag: string | undefined;
     readonly alias: string | undefined;
     readonly description: string | undefined;
-    readonly params: string[];
+    readonly params: LaneParam[];
 
     constructor(lines: string[]) {
         this.tag = this._getTag(lines);
@@ -48,14 +50,14 @@ export class LaneMetadata {
         return lines.filter(l => l.includes(_descName)).map(l => l.replace(_descName, '')).join(' ');
     }
 
-    _getParams(lines: string[]): string[] {
+    _getParams(lines: string[]): LaneParam[] {
         return lines.filter(l => l.includes(_paramTag)).map(l => {
-            const regex = new RegExp('#.*@param (.*)');
-            const match = regex.exec(l);
-            if (match) {
-                return match[1];
+            try {
+                return LaneParam.parseFromLine(l);
+            } catch (error) {
+                console.error("Failed to parse param line: " + error);
+                return null;
             }
-            return undefined;
-        }).filter(l => l !== undefined) as string[];
+        }).filter(x => x !== null) as LaneParam[];
     }
 }

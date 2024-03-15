@@ -1,0 +1,32 @@
+
+const regex = new RegExp("#PARAM \{(?<NAME>[a-z_-]*)\} *(?<DEFAULT>\(.*\))? *(?<COMMENT>.*)?$");
+
+export class LaneParam {
+
+    readonly _name: string;
+    readonly _defaultValue: string | undefined;
+    readonly _comment: string | undefined;
+
+    constructor(name: string, defaultValue: string | undefined, comment: string | undefined) {
+        this._name = name;
+        this._defaultValue = defaultValue;
+        this._comment = comment;
+    }
+
+    /**
+     * Parses a LaneParam for it's formatted string. Throws an error if the string is invalid
+     * @param line the formatted line to parse
+     * @returns a new LaneParam object
+     */
+    static parseFromLine(line: string): LaneParam {
+        const matches: RegExpExecArray | null = regex.exec(line.trim());
+        if (!matches) { throw Error("Invalid param line"); }
+
+        const groups = matches.groups;
+        if (!groups) { throw Error("Missing groups"); }
+        const name = groups['NAME'];
+        const defaultValue = groups['DEFAULT'];
+        const comment = groups['COMMENT'];
+        return new LaneParam(name, defaultValue, comment);
+    }
+}
