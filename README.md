@@ -17,6 +17,10 @@ The settings exposed by this extension are:
 
 # Release notes
 
+# 0.2.1
+
+- Now the logs are printed in the `fastlane_launcher` task inside the output panel
+
 # 0.2.0
 
 - Now it's possible to expose the lane's variables by using the `#PARA` tag.
