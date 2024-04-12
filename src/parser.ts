@@ -12,11 +12,12 @@ export function parseFastfile(fastfilePath: string): Lane[] {
 
     const contentLines = content.split('\n').map(l => l.trim());
 
-    const lanes = content.match(/^(private_)?lane(.|\n)*?^end/gm);
-    if (!lanes) { throw Error(`No lanes found`); }
+    const laneStarts = content.match(/((private_)?lane(?= :).*)/gm);
+    if (!laneStarts) { throw Error(`No lanes found`); }
 
-    return lanes.map(lane => {
-        const laneHeader = lane.split("\n")[0].trim();
+    return laneStarts.map(laneHeader => {
+        const indentationSpaces = laneHeader.match(/^( *)/gm)![0].length;
+        const endTag = '^' + "end$".padStart( indentationSpaces, " ");
         const startIdx = contentLines.indexOf(laneHeader.trim());
         let idx = startIdx;
         let line: string;
@@ -26,7 +27,7 @@ export function parseFastfile(fastfilePath: string): Lane[] {
             if (!line) { break; }
             metadataLines.push(line);
             idx--;
-        } while (!line.trim().match(/^end$/) || idx !== 0);
+        } while (!line.match(RegExp(endTag)) || idx !== 0);
 
 
         let metadata = new LaneMetadata(metadataLines);
